@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connect Four Duel</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2e5d 0%, #00b4d8 100%);
+            color: #fff;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+        .game-area {
+            background: #fff;
+            color: #0a2e5d;
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            min-width: 340px;
+            text-align: center;
+        }
+        .input-row {
+            margin: 1.2rem 0;
+        }
+        .input-row input {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            width: 120px;
+            margin-right: 0.7rem;
+        }
+        .input-row button {
+            background: #00b4d8;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover {
+            background: #0077b6;
+        }
+        .status {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem 0;
+            min-height: 1.5em;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 48px);
+            grid-template-rows: repeat(6, 48px);
+            gap: 6px;
+            margin: 1.5rem 0 0.5rem 0;
+            background: #0a2e5d;
+            border-radius: 10px;
+            justify-content: center;
+        }
+        .cell {
+            width: 48px;
+            height: 48px;
+            background: #e0f7fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .cell.red { background: #e63946; color: #fff; }
+        .cell.yellow { background: #ffd60a; color: #0a2e5d; }
+        .cell.winner { box-shadow: 0 0 0 4px #00b4d8, 0 0 16px 8px #00b4d8; }
+        .nav-links {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #00b4d8;
+            background: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Connect Four Duel</h1>
+    <div class="game-area">
+        <div class="status" id="status">Enter player names to start!</div>
+        <div class="input-row">
+            <input type="text" id="player1" placeholder="Player 1 name" />
+            <input type="text" id="player2" placeholder="Player 2 name" />
+            <button id="startBtn">Start Game</button>
+        </div>
+        <div class="board" id="board" style="display:none;"></div>
+    </div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="tic-tac-toe.html">Tic-Tac-Toe</a>
+        <a href="typeracing.html">TypeRacing</a>
+        <a href="number-guess-duel.html">Number Guess Duel</a>
+        <a href="battleship-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Battleship Duel</a>
+        <a href="pictionary-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Pictionary Duel</a>
+    </div>
+    <script>
+        let playerNames = [];
+        let currentPlayer = 0;
+        let board = [];
+        let gameActive = false;
+        let winnerCells = [];
+
+        const statusElem = document.getElementById('status');
+        const player1Elem = document.getElementById('player1');
+        const player2Elem = document.getElementById('player2');
+        const startBtn = document.getElementById('startBtn');
+        const boardElem = document.getElementById('board');
+
+        function resetBoard() {
+            board = Array(6).fill(null).map(() => Array(7).fill(null));
+            winnerCells = [];
+        }
+
+        function renderBoard() {
+            boardElem.innerHTML = '';
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 7; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (board[row][col] === 0) cell.classList.add('red');
+                    if (board[row][col] === 1) cell.classList.add('yellow');
+                    if (winnerCells.some(([r, c]) => r === row && c === col)) cell.classList.add('winner');
+                    cell.onclick = () => handleMove(col);
+                    boardElem.appendChild(cell);
+                }
+            }
+        }
+
+        function handleMove(col) {
+            if (!gameActive) return;
+            // Find lowest empty row in this column
+            for (let row = 5; row >= 0; row--) {
+                if (board[row][col] === null) {
+                    board[row][col] = currentPlayer;
+                    if (checkWin(row, col)) {
+                        gameActive = false;
+                        statusElem.textContent = `${playerNames[currentPlayer]} wins!`;
+                    } else if (board.flat().every(cell => cell !== null)) {
+                        statusElem.textContent = "It's a tie!";
+                        gameActive = false;
+                    } else {
+                        currentPlayer = 1 - currentPlayer;
+                        statusElem.textContent = `${playerNames[currentPlayer]}'s turn (${currentPlayer === 0 ? 'Red' : 'Yellow'})`;
+                    }
+                    renderBoard();
+                    return;
+                }
+            }
+        }
+
+        function checkWin(row, col) {
+            const directions = [
+                [0,1], [1,0], [1,1], [1,-1]
+            ];
+            for (const [dr, dc] of directions) {
+                let count = 1;
+                let cells = [[row, col]];
+                for (let d = 1; d < 4; d++) {
+                    const r = row + dr*d, c = col + dc*d;
+                    if (r < 0 || r > 5 || c < 0 || c > 6 || board[r][c] !== currentPlayer) break;
+                    count++;
+                    cells.push([r, c]);
+                }
+                for (let d = 1; d < 4; d++) {
+                    const r = row - dr*d, c = col - dc*d;
+                    if (r < 0 || r > 5 || c < 0 || c > 6 || board[r][c] !== currentPlayer) break;
+                    count++;
+                    cells.push([r, c]);
+                }
+                if (count >= 4) {
+                    winnerCells = cells;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        startBtn.onclick = () => {
+            const p1 = player1Elem.value.trim();
+            const p2 = player2Elem.value.trim();
+            if (!p1 || !p2) {
+                statusElem.textContent = 'Please enter both player names!';
+                return;
+            }
+            playerNames = [p1, p2];
+            currentPlayer = 0;
+            resetBoard();
+            gameActive = true;
+            boardElem.style.display = 'grid';
+            statusElem.textContent = `${playerNames[currentPlayer]}'s turn (Red)`;
+            renderBoard();
+        };
+    </script>
+</body>
+</html>

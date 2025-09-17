@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Battleship Duel</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2e5d 0%, #00b4d8 100%);
+            color: #fff;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+        .game-area {
+            background: #fff;
+            color: #0a2e5d;
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            min-width: 340px;
+            text-align: center;
+        }
+        .input-row {
+            margin: 1.2rem 0;
+        }
+        .input-row input {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            width: 120px;
+            margin-right: 0.7rem;
+        }
+        .input-row button {
+            background: #00b4d8;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover {
+            background: #0077b6;
+        }
+        .status {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem 0;
+            min-height: 1.5em;
+        }
+        .boards {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 32px);
+            grid-template-rows: repeat(8, 32px);
+            gap: 2px;
+            background: #0a2e5d;
+            border-radius: 8px;
+        }
+        .cell {
+            width: 32px;
+            height: 32px;
+            background: #e0f7fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .cell.ship { background: #b2ebf2; }
+        .cell.hit { background: #e63946; color: #fff; }
+        .cell.miss { background: #adb5bd; color: #fff; }
+        .cell.own { cursor: default; }
+        .nav-links {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #00b4d8;
+            background: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Battleship Duel</h1>
+    <div class="game-area">
+        <div class="status" id="status">Enter player names to start!</div>
+        <div class="input-row">
+            <input type="text" id="player1" placeholder="Player 1 name" />
+            <input type="text" id="player2" placeholder="Player 2 name" />
+            <button id="startBtn">Start Game</button>
+        </div>
+        <div class="boards" id="boards" style="display:none;">
+            <div>
+                <div style="font-weight:700; margin-bottom:0.5rem;">Your Board</div>
+                <div class="board" id="ownBoard"></div>
+            </div>
+            <div>
+                <div style="font-weight:700; margin-bottom:0.5rem;">Opponent Board</div>
+                <div class="board" id="opponentBoard"></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="tic-tac-toe.html">Tic-Tac-Toe</a>
+        <a href="typeracing.html">TypeRacing</a>
+        <a href="number-guess-duel.html">Number Guess Duel</a>
+        <a href="connect-four-duel.html">Connect Four Duel</a>
+        <a href="pictionary-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Pictionary Duel</a>
+    </div>
+    <script>
+        // --- Battleship Game Logic ---
+        const BOARD_SIZE = 8;
+        const SHIPS = [4, 3, 3, 2, 2]; // Ship lengths
+        let playerNames = [];
+        let boards = [[], []]; // 0: current, 1: opponent
+        let hits = [[], []];
+        let currentPlayer = 0;
+        let gameActive = false;
+        let placingShips = true;
+        let shipPlacementIndex = 0;
+        let shipCellsPlaced = 0;
+        let currentShipLength = 0;
+        let currentShipCells = [];
+
+        const statusElem = document.getElementById('status');
+        const player1Elem = document.getElementById('player1');
+        const player2Elem = document.getElementById('player2');
+        const startBtn = document.getElementById('startBtn');
+        const boardsElem = document.getElementById('boards');
+        const ownBoardElem = document.getElementById('ownBoard');
+        const opponentBoardElem = document.getElementById('opponentBoard');
+
+        function initBoards() {
+            boards = [
+                Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0)),
+                Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0))
+            ];
+            hits = [
+                Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0)),
+                Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0))
+            ];
+        }
+
+        function renderBoards() {
+            // Own board
+            ownBoardElem.innerHTML = '';
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell own';
+                    if (boards[currentPlayer][r][c] === 1) cell.classList.add('ship');
+                    if (hits[currentPlayer][r][c] === 2) cell.classList.add('hit');
+                    if (hits[currentPlayer][r][c] === 1) cell.classList.add('miss');
+                    ownBoardElem.appendChild(cell);
+                }
+            }
+            // Opponent board
+            opponentBoardElem.innerHTML = '';
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (hits[1-currentPlayer][r][c] === 2) cell.classList.add('hit');
+                    if (hits[1-currentPlayer][r][c] === 1) cell.classList.add('miss');
+                    cell.onclick = () => handleAttack(r, c);
+                    opponentBoardElem.appendChild(cell);
+                }
+            }
+        }
+
+        function handleAttack(r, c) {
+            if (!gameActive || placingShips) return;
+            if (hits[1-currentPlayer][r][c] !== 0) return;
+            if (boards[1-currentPlayer][r][c] === 1) {
+                hits[1-currentPlayer][r][c] = 2; // hit
+                statusElem.textContent = `Hit! ${playerNames[currentPlayer]} goes again.`;
+                if (checkWin(1-currentPlayer)) {
+                    statusElem.textContent = `${playerNames[currentPlayer]} wins!`;
+                    gameActive = false;
+                }
+            } else {
+                hits[1-currentPlayer][r][c] = 1; // miss
+                statusElem.textContent = `Miss! Switching turns.`;
+                currentPlayer = 1 - currentPlayer;
+            }
+            renderBoards();
+        }
+
+        function checkWin(playerIdx) {
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (boards[playerIdx][r][c] === 1 && hits[playerIdx][r][c] !== 2) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function startShipPlacement() {
+            placingShips = true;
+            shipPlacementIndex = 0;
+            shipCellsPlaced = 0;
+            currentShipLength = SHIPS[shipPlacementIndex];
+            currentShipCells = [];
+            statusElem.textContent = `${playerNames[currentPlayer]}, place your ship of length ${currentShipLength}. Click ${currentShipLength} cells.`;
+            renderBoards();
+            ownBoardElem.querySelectorAll('.cell').forEach((cell, idx) => {
+                cell.onclick = () => handleShipPlacement(Math.floor(idx/BOARD_SIZE), idx%BOARD_SIZE);
+            });
+            opponentBoardElem.innerHTML = '<div style="color:#888; margin-top:2rem;">Waiting for ship placement...</div>';
+        }
+
+        function handleShipPlacement(r, c) {
+            if (boards[currentPlayer][r][c] === 1) return;
+            boards[currentPlayer][r][c] = 1;
+            currentShipCells.push([r, c]);
+            shipCellsPlaced++;
+            renderBoards();
+            ownBoardElem.querySelectorAll('.cell').forEach((cell, idx) => {
+                cell.onclick = () => handleShipPlacement(Math.floor(idx/BOARD_SIZE), idx%BOARD_SIZE);
+            });
+            if (shipCellsPlaced === currentShipLength) {
+                shipPlacementIndex++;
+                if (shipPlacementIndex < SHIPS.length) {
+                    currentShipLength = SHIPS[shipPlacementIndex];
+                    shipCellsPlaced = 0;
+                    currentShipCells = [];
+                    statusElem.textContent = `${playerNames[currentPlayer]}, place your ship of length ${currentShipLength}. Click ${currentShipLength} cells.`;
+                } else {
+                    // Next player
+                    if (currentPlayer === 0) {
+                        currentPlayer = 1;
+                        shipPlacementIndex = 0;
+                        shipCellsPlaced = 0;
+                        currentShipLength = SHIPS[shipPlacementIndex];
+                        currentShipCells = [];
+                        statusElem.textContent = `${playerNames[currentPlayer]}, place your ship of length ${currentShipLength}. Click ${currentShipLength} cells.`;
+                        renderBoards();
+                        ownBoardElem.querySelectorAll('.cell').forEach((cell, idx) => {
+                            cell.onclick = () => handleShipPlacement(Math.floor(idx/BOARD_SIZE), idx%BOARD_SIZE);
+                        });
+                    } else {
+                        // Start game
+                        placingShips = false;
+                        currentPlayer = 0;
+                        statusElem.textContent = `${playerNames[currentPlayer]}'s turn! Click opponent's board to attack.`;
+                        renderBoards();
+                    }
+                }
+            }
+        }
+
+        startBtn.onclick = () => {
+            const p1 = player1Elem.value.trim();
+            const p2 = player2Elem.value.trim();
+            if (!p1 || !p2) {
+                statusElem.textContent = 'Please enter both player names!';
+                return;
+            }
+            playerNames = [p1, p2];
+            initBoards();
+            boardsElem.style.display = 'flex';
+            currentPlayer = 0;
+            gameActive = true;
+            startShipPlacement();
+        };
+    </script>
+</body>
+</html>

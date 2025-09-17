@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pictionary Duel</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2e5d 0%, #00b4d8 100%);
+            color: #fff;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+        .game-area {
+            background: #fff;
+            color: #0a2e5d;
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            min-width: 340px;
+            text-align: center;
+        }
+        .input-row {
+            margin: 1.2rem 0;
+        }
+        .input-row input, .input-row button {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            margin-right: 0.7rem;
+        }
+        .input-row button {
+            background: #00b4d8;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover {
+            background: #0077b6;
+        }
+        .status {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem 0;
+            min-height: 1.5em;
+        }
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        canvas {
+            background: #fff;
+            border: 2px solid #00b4d8;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            cursor: crosshair;
+        }
+        .nav-links {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #00b4d8;
+            background: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pictionary Duel</h1>
+    <div class="game-area">
+        <div class="status" id="status">Player 1: Enter a word and draw it!</div>
+        <div class="input-row" id="wordRow">
+            <input type="text" id="wordInput" placeholder="Enter word to draw..." />
+            <button id="setWordBtn">Set Word</button>
+        </div>
+        <div class="canvas-area" id="canvasArea" style="display:none;">
+            <canvas id="drawCanvas" width="400" height="300"></canvas>
+            <div style="margin-top:0.7rem;">
+                <button id="clearBtn">Clear Drawing</button>
+                <button id="doneBtn">Done Drawing</button>
+            </div>
+        </div>
+        <div class="input-row" id="guessRow" style="display:none;">
+            <input type="text" id="guessInput" placeholder="Guess the word..." />
+            <button id="guessBtn">Guess</button>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="tic-tac-toe.html">Tic-Tac-Toe</a>
+        <a href="typeracing.html">TypeRacing</a>
+        <a href="number-guess-duel.html">Number Guess Duel</a>
+        <a href="connect-four-duel.html">Connect Four Duel</a>
+        <a href="battleship-duel.html">Battleship Duel</a>
+    </div>
+    <script>
+        let secretWord = '';
+        let drawingDone = false;
+        const statusElem = document.getElementById('status');
+        const wordRow = document.getElementById('wordRow');
+        const wordInput = document.getElementById('wordInput');
+        const setWordBtn = document.getElementById('setWordBtn');
+        const canvasArea = document.getElementById('canvasArea');
+        const drawCanvas = document.getElementById('drawCanvas');
+        const clearBtn = document.getElementById('clearBtn');
+        const doneBtn = document.getElementById('doneBtn');
+        const guessRow = document.getElementById('guessRow');
+        const guessInput = document.getElementById('guessInput');
+        const guessBtn = document.getElementById('guessBtn');
+
+        // Drawing logic
+        let drawing = false;
+        let ctx = drawCanvas.getContext('2d');
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        drawCanvas.addEventListener('mousedown', e => {
+            if (drawingDone) return;
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+        drawCanvas.addEventListener('mousemove', e => {
+            if (drawing && !drawingDone) {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            }
+        });
+        drawCanvas.addEventListener('mouseup', () => drawing = false);
+        drawCanvas.addEventListener('mouseleave', () => drawing = false);
+        clearBtn.onclick = () => {
+            ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        };
+
+        setWordBtn.onclick = () => {
+            secretWord = wordInput.value.trim().toLowerCase();
+            if (!secretWord) {
+                statusElem.textContent = 'Please enter a word to draw!';
+                return;
+            }
+            wordRow.style.display = 'none';
+            canvasArea.style.display = '';
+            statusElem.textContent = 'Draw your word! When done, click Done Drawing.';
+        };
+
+        doneBtn.onclick = () => {
+            drawingDone = true;
+            canvasArea.style.display = 'none';
+            guessRow.style.display = '';
+            statusElem.textContent = 'Player 2: Guess the word!';
+            guessInput.value = '';
+            guessInput.focus();
+        };
+
+        guessBtn.onclick = () => {
+            const guess = guessInput.value.trim().toLowerCase();
+            if (!guess) return;
+            if (guess === secretWord) {
+                statusElem.textContent = 'Correct! Player 2 guessed the word!';
+                guessRow.style.display = 'none';
+            } else {
+                statusElem.textContent = 'Incorrect, try again!';
+                guessInput.value = '';
+                guessInput.focus();
+            }
+        };
+    </script>
+</body>
+</html>

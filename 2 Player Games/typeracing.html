@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TypeRacing Game</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2e5d 0%, #00b4d8 100%);
+            color: #fff;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+        .sentence {
+            font-size: 1.3rem;
+            background: #fff;
+            color: #0a2e5d;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            min-width: 320px;
+            text-align: center;
+        }
+        .input-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .type-input {
+            font-size: 1.1rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            width: 320px;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+        .type-input:disabled {
+            background: #e0f7fa;
+        }
+        .timer {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .result {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            font-weight: 700;
+        }
+        .reset-btn {
+            background: #00b4d8;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .reset-btn:hover {
+            background: #0077b6;
+            transform: scale(1.05);
+        }
+        .nav-links {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #00b4d8;
+            background: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <h1>TypeRacing</h1>
+    <div class="sentence" id="sentence"></div>
+    <div class="input-area">
+        <input type="text" id="playerName" class="type-input" placeholder="Enter your name..." autocomplete="off" />
+        <input type="text" id="typeInput" class="type-input" placeholder="Start typing here..." autocomplete="off" disabled />
+        <div class="timer" id="timer">Time: 0.00s</div>
+        <div class="result" id="result"></div>
+        <button class="reset-btn" id="startBtn">Start New Race</button>
+    </div>
+    <div id="leaderboard" style="margin-top:2rem; width:350px; background:#fff; color:#0a2e5d; border-radius:16px; padding:1rem 1.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.10); display:none;">
+        <h2 style="text-align:center; font-size:1.3rem; margin-bottom:1rem;">Leaderboard</h2>
+        <div id="leaderboardContent"></div>
+    </div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="tic-tac-toe.html">Tic-Tac-Toe</a>
+        <a href="number-guess-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Number Guess Duel</a>
+        <a href="connect-four-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Connect Four Duel</a>
+        <a href="battleship-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Battleship Duel</a>
+        <a href="pictionary-duel.html" style="color:#00b4d8; background:#fff; text-decoration:none; padding:0.5rem 1.5rem; border-radius:20px; font-weight:700; margin:0 0.5rem; transition:background 0.2s, color 0.2s;">Pictionary Duel</a>
+    </div>
+    <script>
+        const sentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "Pack my box with five dozen liquor jugs.",
+            "Sphinx of black quartz, judge my vow.",
+            "How vexingly quick daft zebras jump!",
+            "Bright vixens jump; dozy fowl quack.",
+            "Jackdaws love my big sphinx of quartz."
+        ];
+        
+        const sentenceElem = document.getElementById('sentence');
+        const inputElem = document.getElementById('typeInput');
+        const playerNameElem = document.getElementById('playerName');
+        const timerElem = document.getElementById('timer');
+        const resultElem = document.getElementById('result');
+        const startBtn = document.getElementById('startBtn');
+        const leaderboardElem = document.getElementById('leaderboard');
+        const leaderboardContent = document.getElementById('leaderboardContent');
+        let startTime = null;
+        let timerInterval = null;
+        let currentSentence = '';
+        let finished = false;
+        let currentPlayer = '';
+        let playerTimes = {};
+
+        function startRace() {
+            currentPlayer = playerNameElem.value.trim();
+            if (!currentPlayer) {
+                alert('Please enter your name before starting!');
+                playerNameElem.focus();
+                return;
+            }
+            // Pick a random sentence
+            currentSentence = sentences[Math.floor(Math.random() * sentences.length)];
+            sentenceElem.textContent = currentSentence;
+            inputElem.value = '';
+            inputElem.disabled = false;
+            inputElem.focus();
+            resultElem.textContent = '';
+            timerElem.textContent = 'Time: 0.00s';
+            finished = false;
+            startTime = null;
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            timerElem.textContent = `Time: ${elapsed.toFixed(2)}s`;
+        }
+
+        inputElem.addEventListener('input', () => {
+            if (finished) return;
+            if (!startTime) {
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 30);
+            }
+            if (inputElem.value === currentSentence) {
+                finished = true;
+                inputElem.disabled = true;
+                clearInterval(timerInterval);
+                const totalTime = (Date.now() - startTime) / 1000;
+                resultElem.textContent = `Finished in ${totalTime.toFixed(2)} seconds!`;
+                addPlayerTime(currentPlayer, totalTime);
+                updateLeaderboard();
+            }
+        });
+
+        // --- Remove localStorage and restore original leaderboard logic ---
+        // Remove any previous let playerTimes = {};
+        playerTimes = {};
+
+        function addPlayerTime(name, time) {
+            if (!playerTimes[name]) playerTimes[name] = [];
+            playerTimes[name].push(time);
+        }
+
+        function updateLeaderboard() {
+            leaderboardElem.style.display = 'block';
+            let html = '<table style="width:100%; text-align:center; border-collapse:collapse;">';
+            html += '<tr><th style="padding:0.3rem;">Player</th><th style="padding:0.3rem;">Races</th><th style="padding:0.3rem;">Avg Time (s)</th></tr>';
+            const sorted = Object.entries(playerTimes).sort((a, b) => {
+                const avgA = a[1].reduce((x, y) => x + y, 0) / a[1].length;
+                const avgB = b[1].reduce((x, y) => x + y, 0) / b[1].length;
+                return avgA - avgB;
+            });
+            for (const [name, times] of sorted) {
+                const avg = times.reduce((a, b) => a + b, 0) / times.length;
+                html += `<tr><td>${name}</td><td>${times.length}</td><td>${avg.toFixed(2)}</td></tr>`;
+            }
+            html += '</table>';
+            leaderboardContent.innerHTML = html;
+        }
+
+        leaderboardElem.style.display = 'block';
+        updateLeaderboard();
+        inputElem.disabled = true;
+        playerNameElem.value = '';
+        playerNameElem.focus();
+
+        startBtn.addEventListener('click', startRace);
+    </script>
+</body>
+</html>

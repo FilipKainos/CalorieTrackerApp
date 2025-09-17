@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Hub</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2e5d 0%, #00b4d8 100%);
+            color: #fff;
+            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+        .game-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .game-link {
+            background: #fff;
+            color: #00b4d8;
+            text-decoration: none;
+            padding: 2rem 3rem;
+            border-radius: 24px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+        .game-link:hover {
+            background: #00b4d8;
+            color: #fff;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Hub</h1>
+    <div class="game-links">
+        <a class="game-link" href="tic-tac-toe.html">Tic-Tac-Toe</a>
+        <a class="game-link" href="typeracing.html">TypeRacing</a>
+        <a class="game-link" href="number-guess-duel.html">Number Guess Duel</a>
+        <a class="game-link" href="connect-four-duel.html">Connect Four Duel</a>
+        <a class="game-link" href="battleship-duel.html">Battleship Duel</a>
+        <a class="game-link" href="pictionary-duel.html">Pictionary Duel</a>
+    </div>
+</body>
+</html>
