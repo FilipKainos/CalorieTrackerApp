@@ -77,7 +77,73 @@ const timer = new EggTimer(
 timer.setTime(timerDuration);
 
 
-// --- Custom Time Input ---
+// --- Preset Buttons Card ---
+const presetCard = document.createElement('div');
+presetCard.id = 'preset-card';
+presetCard.style.display = 'flex';
+presetCard.style.flexDirection = 'column';
+presetCard.style.alignItems = 'center';
+presetCard.style.background = 'linear-gradient(90deg, #ffe388 0%, #b6e388 100%)';
+presetCard.style.borderRadius = '18px';
+presetCard.style.boxShadow = '0 2px 12px rgba(255,200,0,0.10)';
+presetCard.style.padding = '18px 18px 10px 18px';
+presetCard.style.margin = '0 0 18px 0';
+presetCard.style.maxWidth = '400px';
+presetCard.style.width = '100%';
+presetCard.style.boxSizing = 'border-box';
+
+const presetButtons = document.createElement('div');
+presetButtons.id = 'preset-buttons';
+presetButtons.style.display = 'flex';
+presetButtons.style.justifyContent = 'center';
+presetButtons.style.alignItems = 'center';
+presetButtons.style.gap = '18px';
+presetButtons.style.width = '100%';
+presetButtons.style.boxSizing = 'border-box';
+
+const presets = [
+  { label: 'Soft (4:30)', time: 270, color: 'linear-gradient(135deg, #b6e388 60%, #eaffd0 100%)', border: '#7fc97f' },
+  { label: 'Medium (6:00)', time: 360, color: 'linear-gradient(135deg, #ffe388 60%, #fffbe6 100%)', border: '#ffd700' },
+  { label: 'Hard (9:00)', time: 540, color: 'linear-gradient(135deg, #ffd6a5 60%, #fffbe6 100%)', border: '#ffb347' },
+  { label: 'Jammy (7:00)', time: 420, color: 'linear-gradient(135deg, #ffb7b2 60%, #ffeaea 100%)', border: '#ff6f91' },
+];
+
+presets.forEach(preset => {
+  const btn = document.createElement('button');
+  btn.textContent = preset.label;
+  btn.style.background = preset.color;
+  btn.style.border = `2.5px solid ${preset.border}`;
+  btn.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
+  btn.style.borderRadius = '16px';
+  btn.style.fontSize = '1.08rem';
+  btn.style.fontWeight = 'bold';
+  btn.style.padding = '13px 22px';
+  btn.style.transition = 'background 0.18s, box-shadow 0.18s, transform 0.12s';
+  btn.style.cursor = 'pointer';
+  btn.style.outline = 'none';
+  btn.style.letterSpacing = '0.01em';
+  btn.onmouseover = () => {
+    btn.style.background = 'linear-gradient(135deg, #fff7b2 60%, #fffbe6 100%)';
+    btn.style.boxShadow = '0 4px 18px rgba(255,200,0,0.18)';
+    btn.style.transform = 'translateY(-2px) scale(1.04)';
+  };
+  btn.onmouseout = () => {
+    btn.style.background = preset.color;
+    btn.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
+    btn.style.transform = 'none';
+  };
+  btn.onclick = () => {
+    timerDuration = preset.time;
+    timer.setTime(preset.time);
+    timerDisplay.textContent = formatTime(preset.time);
+    progressBar.style.width = '0%';
+    minInput.value = Math.floor(preset.time / 60);
+    secInput.value = preset.time % 60;
+  };
+  presetButtons.appendChild(btn);
+});
+
+presetCard.appendChild(presetButtons);
 const customTimeForm = document.createElement('form');
 customTimeForm.id = 'custom-time-input';
 customTimeForm.style.display = 'flex';
@@ -216,10 +282,30 @@ timer.onFinish = () => {
 // --- App Layout ---
 const card = document.createElement('div');
 card.id = 'timer-card';
-card.appendChild(customTimeForm);
-card.appendChild(timerDisplay);
-card.appendChild(progressBarWrap);
-card.appendChild(controls);
+card.style.maxWidth = '400px';
+card.style.width = '100%';
+card.style.boxSizing = 'border-box';
+
+// Flex column for all card content
+const cardFlex = document.createElement('div');
+cardFlex.style.display = 'flex';
+cardFlex.style.flexDirection = 'column';
+cardFlex.style.alignItems = 'center';
+cardFlex.style.width = '100%';
+cardFlex.style.boxSizing = 'border-box';
+
+// Remove margin from presetCard so it fits flush
+presetCard.style.margin = '0 0 10px 0';
+
+cardFlex.appendChild(presetCard);
+cardFlex.appendChild(customTimeForm);
+cardFlex.appendChild(timerDisplay);
+cardFlex.appendChild(progressBarWrap);
+cardFlex.appendChild(controls);
+card.appendChild(cardFlex);
 
 app.innerHTML = '';
+app.style.display = 'flex';
+app.style.flexDirection = 'column';
+app.style.alignItems = 'center';
 app.appendChild(card);
