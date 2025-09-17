@@ -55,34 +55,69 @@ timer.setTime(180);
 
 // --- Custom Time Input ---
 const customTimeForm = document.createElement('form');
+customTimeForm.id = 'custom-time-input';
 customTimeForm.style.display = 'flex';
 customTimeForm.style.justifyContent = 'center';
+customTimeForm.style.alignItems = 'center';
 customTimeForm.style.gap = '8px';
 customTimeForm.style.marginBottom = '18px';
+customTimeForm.style.background = 'rgba(255,255,255,0.7)';
+customTimeForm.style.borderRadius = '12px';
+customTimeForm.style.padding = '8px 12px';
+customTimeForm.style.boxShadow = '0 1px 6px rgba(180,180,180,0.08)';
 
 const minInput = document.createElement('input');
 minInput.type = 'number';
 minInput.min = '0';
 minInput.max = '99';
 minInput.value = '3';
-minInput.style.width = '48px';
 minInput.placeholder = 'min';
+minInput.style.width = '48px';
+minInput.style.borderRadius = '8px';
+minInput.style.border = '1.5px solid #b6d8ff';
+minInput.style.background = '#f7faff';
+minInput.style.fontSize = '1.1rem';
+minInput.style.textAlign = 'center';
+minInput.style.padding = '6px 4px';
+minInput.style.marginRight = '2px';
+
+const minLabel = document.createElement('span');
+minLabel.textContent = 'min';
+minLabel.style.marginRight = '8px';
+minLabel.style.fontSize = '1.05rem';
+minLabel.style.color = '#888';
 
 const secInput = document.createElement('input');
 secInput.type = 'number';
 secInput.min = '0';
 secInput.max = '59';
 secInput.value = '0';
-secInput.style.width = '48px';
 secInput.placeholder = 'sec';
+secInput.style.width = '48px';
+secInput.style.borderRadius = '8px';
+secInput.style.border = '1.5px solid #b6d8ff';
+secInput.style.background = '#f7faff';
+secInput.style.fontSize = '1.1rem';
+secInput.style.textAlign = 'center';
+secInput.style.padding = '6px 4px';
+secInput.style.marginRight = '2px';
+
+const secLabel = document.createElement('span');
+secLabel.textContent = 'sec';
+secLabel.style.marginRight = '8px';
+secLabel.style.fontSize = '1.05rem';
+secLabel.style.color = '#888';
 
 const setBtn = makeButton('Set', '#b6e388');
 setBtn.type = 'submit';
+setBtn.style.padding = '8px 18px';
+setBtn.style.fontSize = '1rem';
+setBtn.style.borderRadius = '8px';
 
 customTimeForm.appendChild(minInput);
-customTimeForm.appendChild(document.createTextNode('min'));
+customTimeForm.appendChild(minLabel);
 customTimeForm.appendChild(secInput);
-customTimeForm.appendChild(document.createTextNode('sec'));
+customTimeForm.appendChild(secLabel);
 customTimeForm.appendChild(setBtn);
 
 customTimeForm.onsubmit = (e) => {
