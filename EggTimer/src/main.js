@@ -33,24 +33,48 @@ function makeButton(label, color) {
 }
 
 
-// --- Minimal Timer Logic ---
+
+// --- Minimal Timer Logic & Progress Bar ---
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
   const s = (seconds % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
 
+// Progress bar elements
+const progressBarWrap = document.createElement('div');
+progressBarWrap.id = 'progress-bar-wrap';
+progressBarWrap.style.width = '100%';
+progressBarWrap.style.height = '14px';
+progressBarWrap.style.background = '#fff7b2';
+progressBarWrap.style.borderRadius = '10px';
+progressBarWrap.style.margin = '18px 0 10px 0';
+progressBarWrap.style.overflow = 'hidden';
+
+const progressBar = document.createElement('div');
+progressBar.id = 'progress-bar';
+progressBar.style.height = '100%';
+progressBar.style.width = '0%';
+progressBar.style.background = 'linear-gradient(90deg, #ffe388 0%, #b6e388 100%)';
+progressBar.style.transition = 'width 0.3s cubic-bezier(.4,2,.6,1)';
+progressBarWrap.appendChild(progressBar);
+
+let timerDuration = 180;
 const timer = new EggTimer(
   (remaining) => {
     timerDisplay.textContent = formatTime(remaining);
+    // Update progress bar
+    let percent = timerDuration === 0 ? 0 : ((timerDuration - remaining) / timerDuration) * 100;
+    progressBar.style.width = `${percent}%`;
   },
   () => {
     timerDisplay.textContent = 'Done!';
+    progressBar.style.width = '100%';
   }
 );
 
 // Set initial time (e.g., 3 minutes)
-timer.setTime(180);
+timer.setTime(timerDuration);
 
 
 // --- Custom Time Input ---
@@ -126,8 +150,10 @@ customTimeForm.onsubmit = (e) => {
   let secs = parseInt(secInput.value, 10) || 0;
   let total = mins * 60 + secs;
   if (total > 0) {
+    timerDuration = total;
     timer.setTime(total);
     timerDisplay.textContent = formatTime(total);
+    progressBar.style.width = '0%';
   }
 };
 
@@ -192,6 +218,7 @@ const card = document.createElement('div');
 card.id = 'timer-card';
 card.appendChild(customTimeForm);
 card.appendChild(timerDisplay);
+card.appendChild(progressBarWrap);
 card.appendChild(controls);
 
 app.innerHTML = '';
