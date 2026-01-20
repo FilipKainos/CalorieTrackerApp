@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-CZ8f-edS.js"></script>
-  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-CzX_nCc7.css">
+  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-B8h8bjqQ.js"></script>
+  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-BgClD1uf.css">
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
   <!-- Header -->
@@ -160,16 +160,16 @@
           name="name"
           required
           placeholder="e.g., Chicken Salad"
-          class="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+          class="flex-1 min-w-0 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         >
         <button 
           type="button" 
           id="scan-barcode-btn"
-          class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm flex items-center gap-2"
+          class="flex-shrink-0 px-3 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm flex items-center gap-1.5 text-sm font-medium"
           title="Scan Barcode"
         >
           <i data-lucide="scan-line" class="w-4 h-4"></i>
-          Scan
+          <span class="hidden sm:inline">Scan</span>
         </button>
       </div>
     </div>
@@ -522,6 +522,31 @@
     </div>
     <p class="text-sm text-gray-500 mb-2">No calorie goals set</p>
     <p class="text-xs text-gray-400">Click the + button to create your first goal</p>
+  </div>
+</div>
+
+
+  <!-- Protein Goal -->
+  <!-- Protein Goal Card -->
+<div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+  <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+        <i data-lucide="beef" class="w-5 h-5 text-pink-500"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-900">Protein Goal</h3>
+        <p class="text-xs text-gray-500" id="protein-goal-subtitle">Based on your weight</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Protein Goal Content -->
+  <div id="protein-goal-content">
+    <div class="text-center py-4 text-gray-500 text-sm">
+      <i data-lucide="scale" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+      <p>Log your weight to see protein goal</p>
+    </div>
   </div>
 </div>
 
