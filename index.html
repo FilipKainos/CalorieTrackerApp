@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-DStsXRU0.js"></script>
-  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-BPcanZn8.css">
+  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-CZ8f-edS.js"></script>
+  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-CzX_nCc7.css">
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
   <!-- Header -->
@@ -85,6 +85,15 @@
     <div class="text-xs text-gray-500">Calories</div>
   </div>
   
+  <!-- Daily Protein -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+    <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+      <i data-lucide="egg" class="w-5 h-5 text-pink-500"></i>
+    </div>
+    <div class="text-2xl font-bold text-gray-900" id="daily-protein">0</div>
+    <div class="text-xs text-gray-500">Protein (g)</div>
+  </div>
+  
   <!-- Daily Cost -->
   <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
     <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -93,7 +102,9 @@
     <div class="text-2xl font-bold text-gray-900" id="daily-cost">$0</div>
     <div class="text-xs text-gray-500">Spent</div>
   </div>
-  
+</div>
+
+<div class="grid grid-cols-2 gap-3 mb-4">
   <!-- Entry Count -->
   <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
     <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -101,6 +112,15 @@
     </div>
     <div class="text-2xl font-bold text-gray-900" id="daily-count">0</div>
     <div class="text-xs text-gray-500">Meals</div>
+  </div>
+
+  <!-- Daily Protein Percentage (Optional Display) -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+    <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+      <i data-lucide="activity" class="w-5 h-5 text-purple-500"></i>
+    </div>
+    <div class="text-2xl font-bold text-gray-900" id="daily-protein-percent">0%</div>
+    <div class="text-xs text-gray-500">Protein Ratio</div>
   </div>
 </div>
 
@@ -133,14 +153,25 @@
   <form id="food-form" class="space-y-3">
     <div>
       <label for="food-name" class="block text-xs font-medium text-gray-600 mb-1">Food Name</label>
-      <input 
-        type="text" 
-        id="food-name" 
-        name="name"
-        required
-        placeholder="e.g., Chicken Salad"
-        class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-      >
+      <div class="flex gap-2">
+        <input 
+          type="text" 
+          id="food-name" 
+          name="name"
+          required
+          placeholder="e.g., Chicken Salad"
+          class="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+        >
+        <button 
+          type="button" 
+          id="scan-barcode-btn"
+          class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm flex items-center gap-2"
+          title="Scan Barcode"
+        >
+          <i data-lucide="scan-line" class="w-4 h-4"></i>
+          Scan
+        </button>
+      </div>
     </div>
     
     <div class="grid grid-cols-2 gap-3">
@@ -158,17 +189,67 @@
       </div>
       
       <div>
-        <label for="food-cost" class="block text-xs font-medium text-gray-600 mb-1">Cost (optional)</label>
+        <label for="food-protein" class="block text-xs font-medium text-gray-600 mb-1">Protein (g, optional)</label>
         <input 
           type="number" 
-          id="food-cost" 
-          name="cost"
+          id="food-protein" 
+          name="protein"
           min="0"
-          step="0.01"
-          placeholder="$0.00"
+          step="0.1"
+          placeholder="0"
           class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         >
       </div>
+    </div>
+
+    <!-- Serving Size Converter (shown when per-100g values detected) -->
+    <div id="serving-size-container" class="hidden">
+      <div class="p-3 bg-blue-50 rounded-xl border border-blue-200">
+        <div class="flex items-start gap-2 mb-2">
+          <i data-lucide="info" class="w-4 h-4 text-blue-600 mt-0.5"></i>
+          <div class="text-xs text-blue-700">
+            <strong>Per 100g values detected.</strong> Enter actual serving size for accurate calculation.
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="serving-size-input" class="block text-xs font-medium text-blue-700 mb-1">Serving Size (g)</label>
+            <input 
+              type="number" 
+              id="serving-size-input"
+              min="1"
+              step="1"
+              placeholder="e.g., 150"
+              class="w-full px-3 py-2 bg-white border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          <div>
+            <button 
+              type="button"
+              id="calculate-serving-btn"
+              class="mt-5 w-full px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors font-medium"
+            >
+              Calculate
+            </button>
+          </div>
+        </div>
+        <div id="per-100g-values" class="hidden mt-2 text-xs text-blue-600">
+          <!-- Will show original per-100g values -->
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label for="food-cost" class="block text-xs font-medium text-gray-600 mb-1">Cost (optional)</label>
+      <input 
+        type="number" 
+        id="food-cost" 
+        name="cost"
+        min="0"
+        step="0.01"
+        placeholder="$0.00"
+        class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+      >
     </div>
     
     <button 
@@ -724,6 +805,83 @@
     </div>
 
   </main>
+
+  <!-- Scanner Modal -->
+  <!-- Barcode Scanner Modal -->
+<div id="scanner-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+    <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+        <i data-lucide="scan-line" class="w-5 h-5 text-blue-500"></i>
+        Scan Barcode
+      </h3>
+      <button 
+        id="close-scanner-btn"
+        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    
+    <div class="p-4">
+      <!-- Camera feed -->
+      <div id="scanner-reader" class="w-full bg-gray-900 rounded-xl overflow-hidden mb-3" style="min-height: 300px;">
+        <!-- Camera will be injected here -->
+      </div>
+      
+      <!-- Status messages -->
+      <div id="scanner-status" class="text-sm text-center text-gray-600 mb-3">
+        Position barcode in the box above
+      </div>
+      
+      <!-- Detected barcode display -->
+      <div id="scanner-result" class="hidden p-3 bg-blue-50 rounded-lg mb-3">
+        <div class="text-xs text-blue-600 mb-1">Detected Barcode:</div>
+        <div id="scanner-barcode" class="font-mono text-lg font-bold text-blue-900"></div>
+      </div>
+      
+      <!-- Error display -->
+      <div id="scanner-error" class="hidden p-3 bg-red-50 rounded-lg text-sm text-red-700">
+        <!-- Error message will be displayed here -->
+      </div>
+      
+      <!-- Instructions -->
+      <div class="text-xs text-gray-500 space-y-1">
+        <p>• Allow camera access when prompted</p>
+        <p>• Hold barcode steady in the scanning box</p>
+        <p>• Make sure barcode is well-lit and clear</p>
+        <p>• EAN-13 barcodes only (13 digits)</p>
+      </div>
+    </div>
+    
+    <!-- Debug: Manual barcode entry -->
+    <div class="p-4 border-t border-gray-200 bg-gray-50">
+      <details class="text-xs">
+        <summary class="cursor-pointer text-gray-600 hover:text-gray-900 font-medium mb-2">
+          Debug: Manual Entry
+        </summary>
+        <div class="flex gap-2 mt-2">
+          <input 
+            type="text" 
+            id="manual-barcode-input"
+            placeholder="Enter 13-digit barcode"
+            maxlength="13"
+            pattern="[0-9]{13}"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          >
+          <button 
+            type="button"
+            id="manual-barcode-submit"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+          >
+            Test
+          </button>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
 
   <!-- Notification Container -->
   <div id="notification-container"></div>
