@@ -22,7 +22,7 @@ function nunjucksPlugin() {
 
 export default defineConfig({
   plugins: [nunjucksPlugin()],
-  base: './',
+  base: '/CalorieTrackerApp/',
   root: 'src',
   build: {
     outDir: '../dist',
