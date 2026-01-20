@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-DTXKzHxq.js"></script>
-  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-y49Ub-UY.css">
+  <script type="module" crossorigin src="/CalorieTrackerApp/assets/main-DStsXRU0.js"></script>
+  <link rel="stylesheet" crossorigin href="/CalorieTrackerApp/assets/main-BPcanZn8.css">
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
   <!-- Header -->
@@ -70,7 +70,12 @@
 
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-3 gap-3 mb-4">
+    <!-- Active Calorie Goal Display -->
+<div id="active-calorie-goal" class="hidden mb-4">
+  <!-- Will be populated dynamically -->
+</div>
+
+<div class="grid grid-cols-3 gap-3 mb-4">
   <!-- Daily Calories -->
   <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
     <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -274,7 +279,7 @@
   <div class="flex items-center justify-between mb-3">
     <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
       <i data-lucide="sparkles" class="w-4 h-4 text-purple-500"></i>
-      What's New - v2.0
+      What's New - v1.2.0
     </h3>
     <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
       <i data-lucide="x" class="w-4 h-4 text-gray-400"></i>
@@ -283,28 +288,159 @@
   
   <div class="space-y-2 text-sm">
     <div class="flex items-start gap-2 text-gray-700">
-      <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
-      <span><strong>Weight Goals:</strong> Set target weight and date, track progress</span>
+      <i data-lucide="check-circle" class="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"></i>
+      <span><strong>Calorie Goals:</strong> Set daily calorie targets with flexible date ranges</span>
     </div>
     <div class="flex items-start gap-2 text-gray-700">
-      <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
-      <span><strong>Progress Tracking:</strong> See if you're on track, ahead, or behind</span>
+      <i data-lucide="check-circle" class="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"></i>
+      <span><strong>Permanent Goals:</strong> Set goals that are always active</span>
     </div>
     <div class="flex items-start gap-2 text-gray-700">
-      <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
-      <span><strong>Weight Chart:</strong> Visualize your weight journey over time</span>
+      <i data-lucide="check-circle" class="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"></i>
+      <span><strong>Date Ranges:</strong> Create goals for specific weeks or months</span>
     </div>
     <div class="flex items-start gap-2 text-gray-700">
-      <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"></i>
-      <span><strong>Data Backup:</strong> Export and import your data safely</span>
+      <i data-lucide="check-circle" class="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"></i>
+      <span><strong>Specific Dates:</strong> Set special calorie targets for individual days</span>
+    </div>
+    <div class="flex items-start gap-2 text-gray-700">
+      <i data-lucide="check-circle" class="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"></i>
+      <span><strong>Real-time Progress:</strong> See calorie consumption vs your goal instantly</span>
     </div>
   </div>
   
   <div class="mt-3 pt-3 border-t border-gray-100">
     <p class="text-xs text-gray-500">
       <i data-lucide="shield-check" class="w-3 h-3 inline mr-1"></i>
-      Database upgraded to v2 - your existing data is preserved
+      Database upgraded to v3 - your existing data is preserved
     </p>
+  </div>
+</div>
+
+
+  <!-- Calorie Goals -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+        <i data-lucide="target" class="w-5 h-5 text-orange-500"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-900">Daily Calorie Goal</h3>
+        <p class="text-xs text-gray-500">Track your calorie targets</p>
+      </div>
+    </div>
+    <button id="toggle-calorie-goal-form" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+      <i data-lucide="plus" class="w-5 h-5 text-gray-600"></i>
+    </button>
+  </div>
+
+  <!-- Add/Edit Goal Form -->
+  <div id="calorie-goal-form-container" class="hidden mb-4">
+    <form id="calorie-goal-form" class="space-y-4 p-4 bg-gray-50 rounded-xl">
+      <input type="hidden" id="calorie-goal-id" />
+      
+      <div>
+        <label for="calorie-goal-target" class="block text-sm font-medium text-gray-700 mb-1">
+          Target Calories
+        </label>
+        <input
+          type="number"
+          id="calorie-goal-target"
+          placeholder="e.g., 2000"
+          required
+          min="0"
+          step="50"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label for="calorie-goal-name" class="block text-sm font-medium text-gray-700 mb-1">
+          Goal Name (Optional)
+        </label>
+        <input
+          type="text"
+          id="calorie-goal-name"
+          placeholder="e.g., Summer Cut, Maintenance"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label for="calorie-goal-type" class="block text-sm font-medium text-gray-700 mb-1">
+          Goal Type
+        </label>
+        <select
+          id="calorie-goal-type"
+          required
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        >
+          <option value="permanent">Permanent (Always Active)</option>
+          <option value="date-range">Date Range (Week, Month, etc.)</option>
+          <option value="specific-date">Specific Date (One Day)</option>
+        </select>
+      </div>
+
+      <div id="date-fields" class="space-y-4 hidden">
+        <div id="start-date-field">
+          <label for="calorie-goal-start-date" class="block text-sm font-medium text-gray-700 mb-1">
+            Start Date
+          </label>
+          <input
+            type="date"
+            id="calorie-goal-start-date"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+
+        <div id="end-date-field" class="hidden">
+          <label for="calorie-goal-end-date" class="block text-sm font-medium text-gray-700 mb-1">
+            End Date
+          </label>
+          <input
+            type="date"
+            id="calorie-goal-end-date"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          class="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          <span id="calorie-goal-submit-text">Set Goal</span>
+        </button>
+        <button
+          type="button"
+          id="cancel-calorie-goal-form"
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Active Goal Display -->
+  <div id="active-calorie-goal" class="hidden">
+    <!-- Will be populated dynamically -->
+  </div>
+
+  <!-- All Goals List -->
+  <div id="calorie-goals-list" class="space-y-2">
+    <!-- Will be populated dynamically -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="no-calorie-goals" class="text-center py-8">
+    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="target" class="w-8 h-8 text-gray-400"></i>
+    </div>
+    <p class="text-sm text-gray-500 mb-2">No calorie goals set</p>
+    <p class="text-xs text-gray-400">Click the + button to create your first goal</p>
   </div>
 </div>
 
