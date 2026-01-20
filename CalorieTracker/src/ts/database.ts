@@ -1,8 +1,8 @@
 // IndexedDB Database Layer for Calorie Tracker
-import type { FoodEntry, WeightEntry } from './types';
+import type { FoodEntry, WeightEntry, GoalWeight } from './types';
 
 const DB_NAME = 'CalorieTrackerDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented for goal weight feature
 
 class Database {
   private db: IDBDatabase | null = null;
@@ -22,8 +22,9 @@ class Database {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        const oldVersion = event.oldVersion;
 
-        // Create food entries store
+        // Create food entries store (v1)
         if (!db.objectStoreNames.contains('foodEntries')) {
           const foodStore = db.createObjectStore('foodEntries', {
             keyPath: 'id',
@@ -33,7 +34,7 @@ class Database {
           foodStore.createIndex('timestamp', 'timestamp', { unique: false });
         }
 
-        // Create weight entries store
+        // Create weight entries store (v1)
         if (!db.objectStoreNames.contains('weightEntries')) {
           const weightStore = db.createObjectStore('weightEntries', {
             keyPath: 'id',
@@ -41,6 +42,15 @@ class Database {
           });
           weightStore.createIndex('date', 'date', { unique: true });
           weightStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+
+        // Create goal weight store (v2) - preserves existing data
+        if (oldVersion < 2 && !db.objectStoreNames.contains('goalWeight')) {
+          const goalStore = db.createObjectStore('goalWeight', {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+          goalStore.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
     });
@@ -209,6 +219,120 @@ class Database {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(new Error('Failed to delete weight entry'));
     });
+  }
+
+  // Goal Weight Methods
+  async setGoalWeight(goal: Omit<GoalWeight, 'id'>): Promise<number> {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+
+      const transaction = this.db.transaction(['goalWeight'], 'readwrite');
+      const store = transaction.objectStore('goalWeight');
+      
+      // Clear existing goals and set new one
+      const clearRequest = store.clear();
+      clearRequest.onsuccess = () => {
+        const addRequest = store.add(goal);
+        addRequest.onsuccess = () => resolve(addRequest.result as number);
+        addRequest.onerror = () => reject(new Error('Failed to set goal weight'));
+      };
+      clearRequest.onerror = () => reject(new Error('Failed to clear previous goals'));
+    });
+  }
+
+  async getGoalWeight(): Promise<GoalWeight | null> {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+
+      const transaction = this.db.transaction(['goalWeight'], 'readonly');
+      const store = transaction.objectStore('goalWeight');
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const goals = request.result;
+        resolve(goals.length > 0 ? goals[0] : null);
+      };
+      request.onerror = () => reject(new Error('Failed to get goal weight'));
+    });
+  }
+
+  async deleteGoalWeight(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+
+      const transaction = this.db.transaction(['goalWeight'], 'readwrite');
+      const store = transaction.objectStore('goalWeight');
+      const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error('Failed to delete goal weight'));
+    });
+  }
+
+  // Data Backup/Export Methods
+  async exportAllData(): Promise<string> {
+    const [foodEntries, weightEntries, goalWeight] = await Promise.all([
+      this.getAllFoodEntries(),
+      this.getAllWeightEntries(),
+      this.getGoalWeight()
+    ]);
+
+    const exportData = {
+      version: 2,
+      exportDate: new Date().toISOString(),
+      data: {
+        foodEntries,
+        weightEntries,
+        goalWeight
+      }
+    };
+
+    return JSON.stringify(exportData, null, 2);
+  }
+
+  async importData(jsonData: string): Promise<void> {
+    try {
+      const importData = JSON.parse(jsonData);
+      
+      if (!importData.data) {
+        throw new Error('Invalid backup format');
+      }
+
+      const { foodEntries, weightEntries, goalWeight } = importData.data;
+
+      // Import food entries
+      if (foodEntries && Array.isArray(foodEntries)) {
+        for (const entry of foodEntries) {
+          const { id, ...entryData } = entry;
+          await this.addFoodEntry(entryData);
+        }
+      }
+
+      // Import weight entries
+      if (weightEntries && Array.isArray(weightEntries)) {
+        for (const entry of weightEntries) {
+          const { id, ...entryData } = entry;
+          await this.addOrUpdateWeightEntry(entryData);
+        }
+      }
+
+      // Import goal weight
+      if (goalWeight) {
+        const { id, ...goalData } = goalWeight;
+        await this.setGoalWeight(goalData);
+      }
+    } catch (error) {
+      throw new Error('Failed to import data: ' + (error as Error).message);
+    }
   }
 }
 

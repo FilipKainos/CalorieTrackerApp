@@ -130,3 +130,84 @@ export function formatDisplayDate(dateStr: string): string {
 export function formatWeightUnit(weight: number, unit: 'kg' | 'lbs' = 'kg'): string {
   return `${weight.toFixed(1)} ${unit}`;
 }
+
+export function calculateWeightProgress(
+  currentWeight: number | null,
+  goalWeight: number,
+  targetDate: string,
+  startWeight: number,
+  startDate: string,
+  weightHistory: Array<{ date: string; weight: number }>
+): import('./types').WeightProgress {
+  const today = new Date();
+  const target = parseDate(targetDate);
+  const start = parseDate(startDate);
+  
+  const totalDays = Math.ceil((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const daysElapsed = Math.ceil((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+  const totalWeightChange = goalWeight - startWeight;
+  const requiredWeeklyChange = totalDays > 0 ? (totalWeightChange / totalDays) * 7 : 0;
+  
+  // Calculate percent complete
+  const currentWeightToUse = currentWeight || startWeight;
+  const actualWeightChange = currentWeightToUse - startWeight;
+  const percentComplete = totalWeightChange !== 0 
+    ? Math.min(100, Math.max(0, (actualWeightChange / totalWeightChange) * 100))
+    : 0;
+  
+  // Calculate actual weekly change from recent data
+  let actualWeeklyChange: number | null = null;
+  if (weightHistory.length >= 2) {
+    const sortedHistory = [...weightHistory].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    const recentEntries = sortedHistory.slice(0, Math.min(14, sortedHistory.length));
+    if (recentEntries.length >= 2) {
+      const latestWeight = recentEntries[0].weight;
+      const oldestWeight = recentEntries[recentEntries.length - 1].weight;
+      const daysDiff = Math.ceil(
+        (parseDate(recentEntries[0].date).getTime() - 
+         parseDate(recentEntries[recentEntries.length - 1].date).getTime()) / 
+        (1000 * 60 * 60 * 24)
+      );
+      
+      if (daysDiff > 0) {
+        actualWeeklyChange = ((latestWeight - oldestWeight) / daysDiff) * 7;
+      }
+    }
+  }
+  
+  // Determine status
+  let status: import('./types').ProgressStatus = 'insufficient-data';
+  
+  if (currentWeight && actualWeeklyChange !== null && weightHistory.length >= 3) {
+    const expectedWeight = startWeight + (requiredWeeklyChange * daysElapsed / 7);
+    const tolerance = Math.abs(totalWeightChange) * 0.1; // 10% tolerance
+    
+    if (Math.abs(currentWeightToUse - expectedWeight) <= tolerance) {
+      status = 'on-track';
+    } else if (totalWeightChange > 0) {
+      // Goal is to gain weight
+      status = currentWeightToUse >= expectedWeight ? 'ahead' : 'behind';
+    } else {
+      // Goal is to lose weight
+      status = currentWeightToUse <= expectedWeight ? 'ahead' : 'behind';
+    }
+  } else if (currentWeight && weightHistory.length >= 1) {
+    status = 'on-track'; // Default to on-track with minimal data
+  }
+  
+  return {
+    status,
+    currentWeight,
+    goalWeight,
+    targetDate,
+    daysRemaining,
+    requiredWeeklyChange,
+    actualWeeklyChange,
+    percentComplete
+  };
+}

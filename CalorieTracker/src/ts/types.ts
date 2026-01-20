@@ -38,3 +38,25 @@ export interface MonthlyAverage {
   avgCost: number;
   totalDays: number;
 }
+
+export interface GoalWeight {
+  id?: number;
+  targetWeight: number;
+  targetDate: string; // ISO date string YYYY-MM-DD
+  startWeight: number;
+  startDate: string;
+  createdAt: number;
+}
+
+export type ProgressStatus = 'on-track' | 'ahead' | 'behind' | 'insufficient-data';
+
+export interface WeightProgress {
+  status: ProgressStatus;
+  currentWeight: number | null;
+  goalWeight: number;
+  targetDate: string;
+  daysRemaining: number;
+  requiredWeeklyChange: number;
+  actualWeeklyChange: number | null;
+  percentComplete: number;
+}
