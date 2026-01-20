@@ -1,0 +1,82 @@
+<div class="space-y-4">
+  <!-- Weekly Average -->
+  <div class="bg-white rounded-2xl shadow-sm p-4">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+        <i data-lucide="calendar-days" class="w-5 h-5 text-purple-500"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-900">Weekly Average</h3>
+        <p class="text-xs text-gray-500" id="weekly-days">0 days tracked</p>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-purple-50 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-purple-600" id="weekly-avg-calories">0</div>
+        <div class="text-xs text-purple-500">Avg Calories/Day</div>
+      </div>
+      <div class="bg-purple-50 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-purple-600" id="weekly-avg-cost">$0</div>
+        <div class="text-xs text-purple-500">Avg Cost/Day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Average -->
+  <div class="bg-white rounded-2xl shadow-sm p-4">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+        <i data-lucide="calendar" class="w-5 h-5 text-indigo-500"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-900">Monthly Average</h3>
+        <p class="text-xs text-gray-500" id="monthly-period">No data</p>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-indigo-50 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-indigo-600" id="monthly-avg-calories">0</div>
+        <div class="text-xs text-indigo-500">Avg Calories/Day</div>
+      </div>
+      <div class="bg-indigo-50 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-indigo-600" id="monthly-avg-cost">$0</div>
+        <div class="text-xs text-indigo-500">Avg Cost/Day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Tips -->
+  <div class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-sm p-4 text-white">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+        <i data-lucide="lightbulb" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-semibold">Quick Tips</h3>
+    </div>
+    
+    <ul class="space-y-2 text-sm text-primary-100">
+      <li class="flex items-start gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+        Track every meal for accurate insights
+      </li>
+      <li class="flex items-start gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+        Weigh yourself at the same time daily
+      </li>
+      <li class="flex items-start gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+        Use the cost tracker to manage food budget
+      </li>
+    </ul>
+  </div>
+
+  <!-- Data Info -->
+  <div class="bg-gray-50 rounded-2xl p-4 text-center">
+    <div class="flex items-center justify-center gap-2 text-gray-500 text-sm">
+      <i data-lucide="shield-check" class="w-4 h-4"></i>
+      <span>All data stored locally on your device</span>
+    </div>
+  </div>
+</div>

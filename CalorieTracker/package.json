@@ -1,0 +1,26 @@
+{
+  "name": "calorie-tracker",
+  "version": "1.0.0",
+  "description": "Personal calorie tracking app with weight logging",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
+  },
+  "devDependencies": {
+    "@types/nunjucks": "^3.2.6",
+    "autoprefixer": "^10.4.19",
+    "gh-pages": "^6.1.1",
+    "nunjucks": "^3.2.4",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-nunjucks": "^0.2.0"
+  },
+  "dependencies": {
+    "lucide": "^0.378.0"
+  }
+}

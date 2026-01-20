@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#22c55e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Calorie Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+  <!-- Header -->
+  {% include "partials/header.njk" %}
+
+  <!-- Main Content -->
+  <main class="max-w-lg mx-auto px-4 pb-8 pt-4">
+    
+    <!-- Date Navigation -->
+    {% include "partials/date-nav.njk" %}
+
+    <!-- Summary Cards -->
+    {% include "partials/summary-cards.njk" %}
+
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-gray-200 mb-4">
+      <button data-tab="food" class="flex-1 py-3 px-4 text-sm font-medium border-b-2 border-primary-500 text-primary-600 flex items-center justify-center gap-2">
+        <i data-lucide="utensils" class="w-4 h-4"></i>
+        Food
+      </button>
+      <button data-tab="weight" class="flex-1 py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 flex items-center justify-center gap-2">
+        <i data-lucide="scale" class="w-4 h-4"></i>
+        Weight
+      </button>
+      <button data-tab="stats" class="flex-1 py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 flex items-center justify-center gap-2">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+        Stats
+      </button>
+    </div>
+
+    <!-- Tab Panels -->
+    <!-- Food Panel -->
+    <div data-panel="food">
+      {% include "partials/food-form.njk" %}
+      {% include "partials/food-list.njk" %}
+    </div>
+
+    <!-- Weight Panel -->
+    <div data-panel="weight" class="hidden">
+      {% include "partials/weight-form.njk" %}
+      {% include "partials/weight-history.njk" %}
+    </div>
+
+    <!-- Stats Panel -->
+    <div data-panel="stats" class="hidden">
+      {% include "partials/stats.njk" %}
+    </div>
+
+  </main>
+
+  <!-- Notification Container -->
+  <div id="notification-container"></div>
+
+  <script type="module" src="./ts/app.ts"></script>
+</body>
+</html>
