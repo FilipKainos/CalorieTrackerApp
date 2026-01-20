@@ -618,7 +618,7 @@ class CalorieTrackerApp {
       return chartHeight - ((weight - (minWeight - padding)) / (range + padding * 2)) * chartHeight;
     };
 
-    const getX = (date: string, index: number) => {
+    const getX = (_date: string, index: number) => {
       const totalDays = sortedEntries.length - 1;
       return totalDays > 0 ? (index / totalDays) * chartWidth : chartWidth / 2;
     };
